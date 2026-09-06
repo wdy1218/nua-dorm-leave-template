@@ -1,0 +1,81 @@
+name: Dorm leave automatic renewal
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: What should this manual run do?
+        required: true
+        default: test-notifications
+        type: choice
+        options:
+          - test-notifications
+          - submit-if-due
+          - submit-if-due-reapply-cancelled
+  schedule:
+    - cron: "17 9,16 * * *"
+      timezone: "Asia/Shanghai"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dorm-leave-automatic-renewal
+  cancel-in-progress: false
+
+jobs:
+  submit-if-due:
+    if: github.event_name == 'workflow_dispatch' || vars.NUA_AUTOMATION_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      TZ: Asia/Shanghai
+      NUA_ACCOUNT: ${{ secrets.NUA_ACCOUNT }}
+      NUA_DORM_PASSWORD: ${{ secrets.NUA_DORM_PASSWORD }}
+      NUA_SESSION_STATE_B64: ${{ secrets.NUA_SESSION_STATE_B64 }}
+      NUA_REASON: ${{ secrets.NUA_REASON }}
+      NUA_DESTINATION: ${{ secrets.NUA_DESTINATION }}
+      NUA_ENABLE_SUBMIT: ${{ secrets.NUA_ENABLE_SUBMIT }}
+      SERVERCHAN_SENDKEY: ${{ secrets.SERVERCHAN_SENDKEY }}
+      PUSHDEER_PUSHKEY: ${{ secrets.PUSHDEER_PUSHKEY }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Validate required secrets
+        shell: bash
+        run: |
+          required=(
+            NUA_ACCOUNT
+            NUA_DORM_PASSWORD
+            NUA_SESSION_STATE_B64
+            NUA_REASON
+            NUA_DESTINATION
+            NUA_ENABLE_SUBMIT
+            SERVERCHAN_SENDKEY
+            PUSHDEER_PUSHKEY
+          )
+          for name in "${required[@]}"; do
+            if [[ -z "${!name}" ]]; then
+              echo "Missing required repository secret: ${name}" >&2
+              exit 1
+            fi
+          done
+
+      - name: Test ServerChan and PushDeer only
+        if: github.event_name == 'workflow_dispatch' && inputs.mode == 'test-notifications'
+        run: node scripts/api-client.cjs --test-notifications
+
+      - name: Check records and submit once if due
+        if: github.event_name != 'workflow_dispatch' || inputs.mode == 'submit-if-due'
+        run: node scripts/api-client.cjs --submit
+
+      - name: Reapply one cancelled interval after explicit manual selection
+        if: github.event_name == 'workflow_dispatch' && inputs.mode == 'submit-if-due-reapply-cancelled'
+        run: node scripts/api-client.cjs --submit --allow-reapply-cancelled
