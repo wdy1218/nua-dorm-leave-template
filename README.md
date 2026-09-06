@@ -35,6 +35,7 @@
 ├── .github/workflows/dorm-leave.yml  # 定时任务与 GitHub Secrets 注入
 ├── scripts/api-client.cjs            # 登录、查询、提交、回查和通知逻辑
 ├── scripts/refresh-session-secret.cjs # 可见浏览器刷新 WebVPN 会话并复制 Secret
+├── 刷新登录状态-Windows.cmd          # Windows 双击运行的一键助手
 ├── package.json                       # 本地会话刷新助手的依赖和命令
 ├── config.example.json               # 非敏感的请假规则配置
 └── .gitignore                        # 阻止敏感文件被提交
@@ -72,7 +73,25 @@ GitHub 在从模板创建仓库时不会复制 Actions Secrets。每位使用者
 
 ### 3. 准备 WebVPN 会话
 
-Windows 10/11 和 macOS 都可以使用会话刷新助手。先安装 [Node.js LTS](https://nodejs.org/)，下载或克隆自己的仓库，然后在仓库目录执行：
+#### Windows 小白版（推荐）
+
+第一次使用只需要按下面操作：
+
+1. 在自己的仓库首页点击 `Code → Download ZIP`，下载后右键选择“全部解压缩”。
+2. 打开解压后的文件夹，双击 `刷新登录状态-Windows.cmd`。
+3. 如果电脑没有 Node.js，脚本会提示通过 Windows 软件管理器安装；安装完成后关闭黑色窗口，再双击一次。
+4. 第一次运行会自动安装所需组件，随后自动打开 Edge 或 Chrome。
+5. 在浏览器里亲自完成统一认证、滑块验证和宿舍系统登录。
+6. 看到“智慧宿舍管理平台”功能页后，回到黑色窗口按回车。
+7. 出现“已复制到剪贴板”后，打开自己仓库的 `Settings → Secrets and variables → Actions`，更新 `NUA_SESSION_STATE_B64`，直接粘贴并保存。
+
+以后会话过期时，不用重新下载，也不用输入命令：再次双击同一个文件即可。
+
+> 必须先把 ZIP 完整解压，不能直接在压缩包预览窗口里运行。滑块仍需本人完成，脚本不会绕过安全验证。
+
+#### 命令行方式（Windows、macOS、Linux）
+
+熟悉终端的用户可以先安装 [Node.js LTS](https://nodejs.org/)，下载或克隆自己的仓库，然后在仓库目录执行：
 
 ```bash
 npm install
@@ -86,7 +105,7 @@ npm run refresh-session
 
 脚本会执行以下操作：
 
-1. 打开本机可见的 Edge 或 Playwright Chromium。
+1. 打开本机可见的 Edge、Chrome 或 Playwright Chromium。
 2. 打开智慧宿舍的完整 WebVPN 入口。
 3. 等待本人手动完成统一认证、滑块验证和宿舍系统登录。
 4. 如果统一认证后跳到其他页面，请在同一浏览器窗口重新打开最初的智慧宿舍网址。
