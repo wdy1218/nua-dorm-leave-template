@@ -1,0 +1,8 @@
+.capture-profile/
+.leave-bot-profile/
+capture.ndjson
+submit-schema.json
+api-dry-run-plan.json
+config.json
+logs/
+node_modules/

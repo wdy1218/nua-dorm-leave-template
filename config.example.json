@@ -1,0 +1,12 @@
+{
+  "account": "YOUR_ACCOUNT",
+  "leaveType": "事假",
+  "leaveTypeId": "2",
+  "boundaryTime": "18:00",
+  "durationHours": 62,
+  "leadHours": 36,
+  "checkIntervalMinutes": 30,
+  "promptCooldownHours": 6,
+  "reason": "",
+  "destination": ""
+}

@@ -1,0 +1,11 @@
+{
+  "name": "nua-dorm-leave-automation",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "refresh-session": "node scripts/refresh-session-secret.cjs"
+  },
+  "dependencies": {
+    "playwright": "^1.62.1"
+  }
+}
